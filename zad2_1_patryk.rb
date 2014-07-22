@@ -1,8 +1,8 @@
 class Zadanie_2
-  def sumaListyLiczb (listaliczb)
+  def sumalistyliczb (listaliczb)
   	for element in listaliczb
   		suma += element
+  		suma
+  	end
   end
-
-  @lista = [1,2,3,4,5,6,7,8]
 end
