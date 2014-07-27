@@ -1,0 +1,3 @@
+class Plakaty
+
+end
