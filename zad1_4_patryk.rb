@@ -1,5 +1,5 @@
 class Library
-	include RentModule
+	include Renting
 
 	attr_accessor :book
 	attr_accessor :books
@@ -173,10 +173,10 @@ class Customer
 	
 end
 
-module RentModule 
+module Renting 
 
 	def check_if_available_book(title, authors_surname)
-		book_arr = @books.select {|book| book.title == title and book.author.surname == authors_surname}
+		book_arr = self.books.select {|book| book.title == title and book.author.surname == authors_surname}
 		unless book_arr.empty?
 			book = book_arr[0]
 			if book.number_of_availabale>0
@@ -191,7 +191,7 @@ module RentModule
 	end
 
 	def check_if_available_customer(name, surname)
-		customer_arr = @customerss.select {|customer| customer.name == name and customer.surname == surname}
+		customer_arr = self.customers.select {|customer| customer.name == name and customer.surname == surname}
 		unless customer.empty?
 			customer= customer_arr[0]
 		else
@@ -201,21 +201,21 @@ module RentModule
 	end
 
 	def rent_book(title, authors_surname, name, surname)
-		book_valid = check_if_available_book(title, authors_surname)
-		customer_valid = check_if_available_customer(name, surname)
+		book_valid = self.check_if_available_book(title, authors_surname)
+		customer_valid = self.check_if_available_customer(name, surname)
 		book_valid.number_of_availabale -=1
-		@rentedbooks <<book_valid
-		customer = @customers.find {|cust| cust==customer_valid}
+		self.rentedbooks << book_valid
+		customer = self.customers.find {|cust| cust==customer_valid}
 		customer.list_of_rented_books<<book_valid
 
 	end
 
 	def give_back(title, authors_surname, name, surname)
-		customer_valid = check_if_available_customer(name, surname)
-		book_valid = check_if_available_book(title, authors_surname)
-		customer = @customers.find {|cust| cust==customer_valid}
+		customer_valid = self.check_if_available_customer(name, surname)
+		book_valid = self.check_if_available_book(title, authors_surname)
+		customer = self.customers.find {|cust| cust==customer_valid}
 		customer.list_of_rented_books.delete(book_valid)
-		@rentedbooks.delete(book_valid)
+		self.rentedbooks.delete(book_valid)
 		book_valid.number_of_availabale +=1
 	end
 end
