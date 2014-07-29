@@ -123,6 +123,7 @@ puts "#{dzien1.plan_hour_starts} - #{dzien1.plan_hour_ends}"
 matematyka = Classes.new('matematyka', 5)
 polski = Classes.new('polski', 10,13)
 angielski = Classes.new('angielski', 13,15)
+puts dzien1.class.name
 dzien1.adding_hour_classes(polski)
 dzien1.adding_hour_classes(angielski)
 dzien1.adding_duration_classes(matematyka)
