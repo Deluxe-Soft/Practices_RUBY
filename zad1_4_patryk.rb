@@ -1,15 +1,26 @@
 class Library
+	include RentModule
 
 	attr_accessor :book
 	attr_accessor :books
 	attr_accessor :newauthor
 	attr_reader :library_name
+	attr_accessor :customers
+	attr_accessor :rentedbooks
 
 	def initialize(library_name)
 		@library_name = library_name
 		@books = Array.new
 		@authors =Array.new
 		@publishers = Array.new
+		@customers = Array.new
+		@rentedbooks = Array.new
+	end
+
+	def add_customer(name, surname, pesel, city, street_name, number)
+		newcustomer = Customer.new(name, surname, pesel, city, street_name, number)
+		@customers <<newcustomer
+		newcustomer
 	end
 
 	def add_publisher(publisher_name)
@@ -56,7 +67,7 @@ class Library
 	end
 
 	def print_library
-		puts "Nazwa:#{self.library_name},Książki:#{self.books}"
+		puts "Nazwa:#{self.library_name}\nKsiążki:#{self.books}\nKlienci:#{self.customers}"
 	end
 
 end
@@ -67,20 +78,19 @@ class Book < Library
 	attr_accessor :publisher
 	attr_accessor :number_of_books
 	attr_accessor :title
-	attr_accessor :book_id
-	attr_accessor :rented
+	attr_accessor :number_of_availabale
 
 	def initialize(title)
 		@number_of_books = 1
+		@number_of_availabale = 1
 		@title = title
 		@author = author
 		@publisher = publisher
-		@book_id +=1
-		@rented = false
 	end
 
 	def increment_number_of_books
     	@number_of_books += 1
+    	@number_of_availabale +=1
   	end
 
   	def add_author(author)
@@ -149,9 +159,65 @@ class Author < Library
 
 end
 
-module Wypozyczenia 
+class Customer 
 
+	attr_accessor :name, :surname, :pesel, :adress, :list_of_rented_books
 
+	def initialize(name, surname, pesel, city, street_name, number)
+		@name = name
+		@surname = surname
+		@pesel = pesel
+		@adress = [city, street_name, number]
+		@list_of_rented_books = Array.new
+	end
+	
+end
+
+module RentModule 
+
+	def check_if_available_book(title, authors_surname)
+		book_arr = @books.select {|book| book.title == title and book.author.surname == authors_surname}
+		unless book_arr.empty?
+			book = book_arr[0]
+			if book.number_of_availabale>0
+				book
+			else
+				raise "Obecnie wszystkie zostały wypożyczone"
+			end
+		else
+			raise "Nie mamy takiej książki"
+		end
+		book
+	end
+
+	def check_if_available_customer(name, surname)
+		customer_arr = @customerss.select {|customer| customer.name == name and customer.surname == surname}
+		unless customer.empty?
+			customer= customer_arr[0]
+		else
+			raise "Nie ma takiego klienta"
+		end
+		customer
+	end
+
+	def rent_book(title, authors_surname, name, surname)
+		book_valid = check_if_available_book(title, authors_surname)
+		customer_valid = check_if_available_customer(name, surname)
+		book_valid.number_of_availabale -=1
+		@rentedbooks <<book_valid
+		customer = @customers.find {|cust| cust==customer_valid}
+		customer.list_of_rented_books<<book_valid
+
+	end
+
+	def give_back(title, authors_surname, name, surname)
+		customer_valid = check_if_available_customer(name, surname)
+		book_valid = check_if_available_book(title, authors_surname)
+		customer = @customers.find {|cust| cust==customer_valid}
+		customer.list_of_rented_books.delete(book_valid)
+		@rentedbooks.delete(book_valid)
+		book_valid.number_of_availabale +=1
+	end
 end
 
 lib1 = Library.new('Halinka')
@@ -159,5 +225,5 @@ lib1.add_publisher('halinkapublisher')
 lib1.add_author('Patryk', 'Mikolajczyk', 1992)
 lib1.add_book('Skoczne pyrzgody', 'Patryk', 'Edward', 1992, 'Moze')
 lib1.add_book('Skoczne pyrzgody', 'Patryk', 'Edward', 1992, 'Moze')
+lib1.add_customer('Edward', 'Edwardowicz', 92081005632, 'wro', 'slo', '1')
 lib1.print_library
-#(title, authors_name, authors_surname, authors_year_of_birth, publisher_name)
