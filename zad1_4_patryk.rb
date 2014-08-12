@@ -1,5 +1,57 @@
+module Renting 
+
+	def check_if_available_book(title, authors_surname)
+		book_arr = self.books.select {|book| book.title == title and book.author.surname == authors_surname}
+		unless book_arr.empty?
+			book = book_arr[0]
+			if book.number_of_availabale>0
+				book
+			else
+				raise "Obecnie wszystkie zostały wypożyczone"
+			end
+		else
+			raise "Nie mamy takiej książki"
+		end
+		book
+	end
+
+	def check_if_available_customer(name, surname)
+		customer_arr = self.customers.select {|customer| customer.name == name and customer.surname == surname}
+		unless customer_arr.empty?
+			customer= customer_arr[0]
+		else
+			raise "Nie ma takiego klienta"
+		end
+		customer
+	end
+
+	def rent_book(title, authors_surname, name, surname)
+		book_valid = self.check_if_available_book(title, authors_surname)
+		customer_valid = self.check_if_available_customer(name, surname)
+		book_valid.number_of_availabale -=1
+		self.rentedbooks << book_valid
+		customer = self.customers.find {|cust| cust==customer_valid}
+		customer.list_of_rented_books<<book_valid
+		puts "Wypożyczono ksiazke: #{book_valid.title}"
+	end
+
+	def give_back(title, authors_surname, name, surname)
+		customer_valid = self.check_if_available_customer(name, surname)
+		book_valid = self.check_if_available_book(title, authors_surname)
+		customer = self.customers.find {|cust| cust==customer_valid}
+		customer.list_of_rented_books.delete(book_valid)
+		self.rentedbooks.delete(book_valid)
+		book_valid.number_of_availabale +=1
+		puts "Oddano ksiazke: #{book_valid.title}"
+	end
+end
+
+##################################################################################################################
+
 class Library
+	#extend Renting
 	include Renting
+	require "awesome_print"
 
 	attr_accessor :book
 	attr_accessor :books
@@ -15,6 +67,10 @@ class Library
 		@publishers = Array.new
 		@customers = Array.new
 		@rentedbooks = Array.new
+	end
+
+	def print_library
+		puts "Nazwa:#{self.library_name}\nKsiążki:#{self.books}\nKlienci:#{self.customers}"
 	end
 
 	def add_customer(name, surname, pesel, city, street_name, number)
@@ -34,7 +90,6 @@ class Library
 		@authors << newauthor
 		newauthor
 	end
-
 
 	def add_book(title, authors_name, authors_surname, authors_year_of_birth, publisher_name)
 		current_book = @books.find {|book| book.title == title and book.author.surname == authors_surname and book.publisher.publisher_name ==publisher_name}
@@ -65,12 +120,9 @@ class Library
 	      @books<<book
 	    end
 	end
-
-	def print_library
-		puts "Nazwa:#{self.library_name}\nKsiążki:#{self.books}\nKlienci:#{self.customers}"
-	end
-
 end
+
+##################################################################################################################
 
 class Book < Library
 
@@ -100,12 +152,9 @@ class Book < Library
   	def add_publisher(publisher)
   		@publisher = publisher
   	end
-
-  	def print_books
-  		puts "Tytuł:#{self.title}, Autor:#{self.print_author}, Wydawca:#{self.print_publisher}, Liczba Książek:#{self.number_of_books}"
-  	end
-
 end
+
+##################################################################################################################
 
 class Publisher < Library
 
@@ -128,11 +177,9 @@ class Publisher < Library
 		@authors << author
 	end
 
-	def print_publisher
-		puts "#{self.publisher_name},Książki:#{self.print_books},Autorzy:#{"self.print_author"}"
-	end
-
 end
+
+##################################################################################################################
 
 class Author < Library
 
@@ -148,16 +195,12 @@ class Author < Library
 		@books = Array.new
 	end
 
-
 	def add_book(book)
 		@books << book
 	end
-
-	def print_author
-		puts "#{self.surname} #{self.name},urodzony:#{self.year_of_birth}. Książki#{self.print_books}"
-	end
-
 end
+
+##################################################################################################################
 
 class Customer 
 
@@ -173,52 +216,7 @@ class Customer
 	
 end
 
-module Renting 
-
-	def check_if_available_book(title, authors_surname)
-		book_arr = self.books.select {|book| book.title == title and book.author.surname == authors_surname}
-		unless book_arr.empty?
-			book = book_arr[0]
-			if book.number_of_availabale>0
-				book
-			else
-				raise "Obecnie wszystkie zostały wypożyczone"
-			end
-		else
-			raise "Nie mamy takiej książki"
-		end
-		book
-	end
-
-	def check_if_available_customer(name, surname)
-		customer_arr = self.customers.select {|customer| customer.name == name and customer.surname == surname}
-		unless customer.empty?
-			customer= customer_arr[0]
-		else
-			raise "Nie ma takiego klienta"
-		end
-		customer
-	end
-
-	def rent_book(title, authors_surname, name, surname)
-		book_valid = self.check_if_available_book(title, authors_surname)
-		customer_valid = self.check_if_available_customer(name, surname)
-		book_valid.number_of_availabale -=1
-		self.rentedbooks << book_valid
-		customer = self.customers.find {|cust| cust==customer_valid}
-		customer.list_of_rented_books<<book_valid
-
-	end
-
-	def give_back(title, authors_surname, name, surname)
-		customer_valid = self.check_if_available_customer(name, surname)
-		book_valid = self.check_if_available_book(title, authors_surname)
-		customer = self.customers.find {|cust| cust==customer_valid}
-		customer.list_of_rented_books.delete(book_valid)
-		self.rentedbooks.delete(book_valid)
-		book_valid.number_of_availabale +=1
-	end
-end
+##################################################################################################################
 
 lib1 = Library.new('Halinka')
 lib1.add_publisher('halinkapublisher')
@@ -226,4 +224,9 @@ lib1.add_author('Patryk', 'Mikolajczyk', 1992)
 lib1.add_book('Skoczne pyrzgody', 'Patryk', 'Edward', 1992, 'Moze')
 lib1.add_book('Skoczne pyrzgody', 'Patryk', 'Edward', 1992, 'Moze')
 lib1.add_customer('Edward', 'Edwardowicz', 92081005632, 'wro', 'slo', '1')
-lib1.print_library
+
+lib1.rent_book('Skoczne pyrzgody', 'Edward','Edward', 'Edwardowicz')
+ap lib1, options = {}
+
+lib1.give_back('Skoczne pyrzgody', 'Edward','Edward', 'Edwardowicz')
+ap lib1, options = {}
